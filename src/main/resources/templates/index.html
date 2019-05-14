@@ -9,6 +9,24 @@
 <h2>Yubikey Demo</h2>
 <hr/>
 
+<form class="form-class">
+    <div class="row" >
+        <label class="label-text">User Name:</label>
+        <input type="text" id="username"/>
+    </div>
+    <div class="row" >
+        <label class="label-text">Display Name:</label>
+        <input type="text" id="displayName"/>
+    </div>
+    <div class="row" >
+        <label class="label-text">Credential nickname:</label>
+        <input type="text" id="credentialNickname"/>
+    </div>
+    <div>
+        <button type="button" onclick="register()">Register new account</button>
+    </div>
+</form>
+
 <button id="register">register</button>
 <br/>
 <button id="auth">auth</button>
@@ -16,41 +34,49 @@
 <button id="reset">reset</button>
 
 <script src="jquery-3.3.1.min.js"></script>
-<script src="u2f-api.js"></script>
+<script src="https://demo.yubico.com/js/u2f-api.js"></script>
 <script>
-    $(function () {
-        $("#register").click(() => {
-            if(window.u2f && window.u2f.register) {
-                $.get("https://localhost/register", result => {
-                    console.log(result);
-                    window.u2f.register(result.appId, [result], [], response => {
-                        $.post("https://localhost/register", { registerResponse: response }, result => {
-                            console.log(result);
-                        });
-                        console.log(response);
-                    });
-                });
-            } else {
-                document.write("<p>U2F is not supported</p>");
-            }
-        });
 
-        $("#login").click(() => {
-            if(window.u2f && window.u2f.sign) {
-                $.get("https://localhost/login", result => {
-                    console.log(result);
-                    window.u2f.sign(result.appId, result.challenge, [result], response => {
-                        $.post("https://localhost/login", { loginResponse: response }, result => {
-                            console.log(result);
-                        });
-                        console.log(response);
-                    });
-                });
-            } else {
-                document.write("<p>U2F is not supported</p>");
-            }
-        });
-    });
+    function register() {
+        var username = document.getElementById("username").value;
+        var displayName = document.getElementById("displayName").value;
+        var credentialNickname = document.getElementById("credentialNickname").value;
+
+    }
+
+    // $(function () {
+    //     $("#register").click(() => {
+    //         if(window.u2f && window.u2f.register) {
+    //             $.get("https://localhost/register", result => {
+    //                 console.log(result);
+    //                 window.u2f.register(result.appId, [result], [], response => {
+    //                     $.post("https://localhost/register", { registerResponse: response }, result => {
+    //                         console.log(result);
+    //                     });
+    //                     console.log(response);
+    //                 });
+    //             });
+    //         } else {
+    //             document.write("<p>U2F is not supported</p>");
+    //         }
+    //     });
+    //
+    //     $("#login").click(() => {
+    //         if(window.u2f && window.u2f.sign) {
+    //             $.get("https://localhost/login", result => {
+    //                 console.log(result);
+    //                 window.u2f.sign(result.appId, result.challenge, [result], response => {
+    //                     $.post("https://localhost/login", { loginResponse: response }, result => {
+    //                         console.log(result);
+    //                     });
+    //                     console.log(response);
+    //                 });
+    //             });
+    //         } else {
+    //             document.write("<p>U2F is not supported</p>");
+    //         }
+    //     });
+    // });
 </script>
 </body>
 </html>
