@@ -66,20 +66,13 @@
 
 
 
-        <!-- yubikey -->
+        <!-- yubico webauthn-->
         <dependency>
             <groupId>com.yubico</groupId>
             <artifactId>webauthn-server-core</artifactId>
             <version>1.2.0</version>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>com.yubico</groupId>
-            <artifactId>webauthn-server-attestation</artifactId>
-            <version>1.2.0</version>
-            <scope>compile</scope>
-        </dependency>
-
 
         <!-- 模板引擎 Thymeleaf 依赖 -->
         <dependency>
