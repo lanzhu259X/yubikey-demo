@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
 <head>
     <meta charset="UTF-8">
     <title>Yubikey Demo</title>
@@ -11,72 +12,182 @@
 
 <form class="form-class">
     <div class="row" >
-        <label class="label-text">User Name:</label>
+        <label class="label-text">Username:</label>
         <input type="text" id="username"/>
     </div>
     <div class="row" >
-        <label class="label-text">Display Name:</label>
-        <input type="text" id="displayName"/>
-    </div>
-    <div class="row" >
-        <label class="label-text">Credential nickname:</label>
+        <label class="label-text">Nickname:</label>
         <input type="text" id="credentialNickname"/>
     </div>
     <div>
-        <button type="button" onclick="register()">Register new account</button>
+        <button type="button" id="register">Register new account</button>
+    </div>
+    <div>
+        <button type="button" id="authenticate">Authenticate</button>
+    </div>
+    <div>
+        <button type="button" id="deregister">Deregister</button>
     </div>
 </form>
 
-<button id="register">register</button>
 <br/>
-<button id="auth">auth</button>
-<br/>
-<button id="reset">reset</button>
 
-<script src="jquery-3.3.1.min.js"></script>
-<script src="https://demo.yubico.com/js/u2f-api.js"></script>
-<script>
+<h2>Log</h2>
+<hr/>
+
+<div class="result-class" id="message-show">
+
+</div>
+
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script th:src="@{js/base64js-1.3.0.min.js}" ></script>
+<script th:src="@{js/base64url.js}"></script>
+<script th:src="@{js/webauthn.js}" ></script>
+<script type="text/javascript">
+
+
+    $(function () {
+        $('#register').click(function () {
+           register();
+        });
+
+        $('#authenticate').click(function () {
+            authenticate(false);
+        });
+
+        $('#deregister').click(function () {
+            deregister();
+        })
+    });
+
+    var basePath = "https://zhouzhipeng.com";
+
+    function showMessage(text) {
+        var p = document.createElement("P");
+        p.innerText = text;
+        var massegeDiv = document.getElementById("message-show");
+        massegeDiv.appendChild(p);
+    }
 
     function register() {
         var username = document.getElementById("username").value;
-        var displayName = document.getElementById("displayName").value;
         var credentialNickname = document.getElementById("credentialNickname").value;
-
+        if (!username || !credentialNickname) {
+            console.warn("username or nickname must.");
+            showMessage("username or nickname must.");
+            return;
+        }
+        username = username.trim();
+        credentialNickname = credentialNickname.trim();
+        if (username == '' || credentialNickname == '') {
+            console.warn("username or nickname must.");
+            showMessage("username or nickname must.");
+            return;
+        }
+        var body = JSON.stringify({username: username, credentialNickname: credentialNickname});
+        $.ajax({
+            type: 'POST',
+            contentType: 'application/json',
+            url: basePath + "/register-start",
+            data: body,
+            success: function (data) {
+                console.log("executeRegisterRequest:", data);
+                var requestId = data.requestId;
+                webauthn.createCredential(data.publicKeyCredentialCreationOptions).then(function (response) {
+                    var credential = webauthn.responseToObject(response);
+                    console.log("requestId: ", requestId);
+                    console.log("credential: ", credential);
+                    finishRegister(requestId, credential);
+                }).catch(function (reason) {
+                    console.log("register error: " + reason.code + " " + reason.message);
+                    showMessage("register error: " + reason.code + " " + reason.message);
+                });
+            }
+        });
     }
 
-    // $(function () {
-    //     $("#register").click(() => {
-    //         if(window.u2f && window.u2f.register) {
-    //             $.get("https://localhost/register", result => {
-    //                 console.log(result);
-    //                 window.u2f.register(result.appId, [result], [], response => {
-    //                     $.post("https://localhost/register", { registerResponse: response }, result => {
-    //                         console.log(result);
-    //                     });
-    //                     console.log(response);
-    //                 });
-    //             });
-    //         } else {
-    //             document.write("<p>U2F is not supported</p>");
-    //         }
-    //     });
-    //
-    //     $("#login").click(() => {
-    //         if(window.u2f && window.u2f.sign) {
-    //             $.get("https://localhost/login", result => {
-    //                 console.log(result);
-    //                 window.u2f.sign(result.appId, result.challenge, [result], response => {
-    //                     $.post("https://localhost/login", { loginResponse: response }, result => {
-    //                         console.log(result);
-    //                     });
-    //                     console.log(response);
-    //                 });
-    //             });
-    //         } else {
-    //             document.write("<p>U2F is not supported</p>");
-    //         }
-    //     });
-    // });
+    function finishRegister(requestId, credential) {
+        console.log("begin reuqest finish register, request:", requestId, credential);
+        showMessage("begin reuqest finish register, request:" + JSON.stringify(credential));
+        var body = JSON.stringify({
+            requestId: requestId,
+            credential: credential
+        });
+        $.ajax({
+            type: 'POST',
+            contentType: 'application/json',
+            url: basePath + "/register-finish",
+            data: body,
+            success: function (data) {
+                console.log("register result:", data);
+                showMessage("register result:" + JSON.stringify(data));
+            }
+        });
+    }
+
+    function authenticate(isDeregister) {
+        var username = document.getElementById("username").value;
+        var credentialNickname = document.getElementById("credentialNickname").value;
+        if (!username || !credentialNickname) {
+            console.warn("username or nickname must.")
+            return;
+        }
+        username = username.trim();
+        credentialNickname = credentialNickname.trim();
+        if (username == '' || credentialNickname == '') {
+            console.warn("username or nickname must.")
+            return;
+        }
+        var body = JSON.stringify({username: username});
+        $.ajax({
+            type: 'POST',
+            contentType: 'application/json',
+            url: basePath + '/authenticate-start',
+            data: body,
+            success: function (data) {
+                console.log("authenticate start result:", data);
+                showMessage("authenticate start result:" + JSON.stringify(data));
+                var requestId = data.requestId;
+                var publicKeyCredentialRequestOptions = data.publicKeyCredentialRequestOptions;
+                webauthn.getAssertion(publicKeyCredentialRequestOptions)
+                    .then(function (result) {
+                        console.log("---------------------> isDeregister:", isDeregister);
+                        var credential = webauthn.responseToObject(result);
+                        finishAuthenticate(requestId, isDeregister, credential);
+                    })
+                    .catch(function (reason) {
+                        console.log("authenticate error: " + reason.code + " " + reason.message);
+                        showMessage("authenticate error: " + reason.code + " " + reason.message);
+                    });
+            }
+        });
+    }
+
+    function finishAuthenticate(requestId, isDeregister, credential) {
+        var message = isDeregister ? "deregister" : "authenticate";
+        console.log("begin reuqest finish "+ message +", request:", requestId, isDeregister, credential);
+        showMessage("begin reuqest finish "+ message +", request:" + JSON.stringify(credential));
+        var body = JSON.stringify({
+            requestId: requestId,
+            deregister: isDeregister === true ? true : false,
+            credential: credential
+        });
+        $.ajax({
+            type: 'POST',
+            contentType: 'application/json',
+            url: basePath + "/authenticate-finish",
+            data: body,
+            success: function (data) {
+                console.log(message + " result:", data);
+                showMessage(message + " result:" + JSON.stringify(data));
+            }
+        });
+    }
+
+    function deregister() {
+        authenticate(true);
+    }
+
 </script>
 </body>
 </html>

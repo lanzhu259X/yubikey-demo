@@ -2,24 +2,23 @@ package com.yubikey.demo.vo;
 
 import com.yubico.webauthn.data.ByteArray;
 import com.yubico.webauthn.data.PublicKeyCredentialCreationOptions;
+import lombok.Builder;
 import lombok.Data;
 
 import java.io.Serializable;
 
+@Builder
 @Data
-public class RegistrationRequest implements Serializable {
+public class RegistrationResponse implements Serializable {
+    private static final long serialVersionUID = -3291894190175041830L;
 
-    private static final long serialVersionUID = 4795768082489208979L;
+    private ByteArray requestId;
+
+    private String appId;
 
     private String username;
 
-    private String displayName;
-
     private String credentialNickname;
-
-    private boolean requireResidentKey;
-
-    private ByteArray requestId;
 
     private PublicKeyCredentialCreationOptions publicKeyCredentialCreationOptions;
 }

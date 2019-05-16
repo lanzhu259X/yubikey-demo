@@ -4,14 +4,14 @@ import com.yubico.webauthn.RegisteredCredential;
 import com.yubico.webauthn.attestation.Attestation;
 import com.yubico.webauthn.data.UserIdentity;
 import lombok.Builder;
-import lombok.Value;
+import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Optional;
 
 @Builder
-@Value
+@Data
 public class CredentialRegistration implements Serializable {
 
     private static final long serialVersionUID = 388386905766037849L;

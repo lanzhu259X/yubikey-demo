@@ -1,23 +1,25 @@
 package com.yubikey.demo.storge;
 
-import com.yubico.webauthn.AssertionResult;
 import com.yubico.webauthn.CredentialRepository;
 import com.yubico.webauthn.data.ByteArray;
 import com.yubikey.demo.entry.CredentialRegistration;
+import com.yubikey.demo.entry.UserEntry;
 
 import java.util.Collection;
 import java.util.Optional;
 
 public interface RegistrationStorage extends CredentialRepository {
 
+
     /**
-     * 通过用户名注册
-     * @param username
-     * @param reg
+     * 注册用户
+     * @param userEntry
      * @return
      */
-    boolean addRegistrationByUsername(String username, CredentialRegistration reg);
+    boolean addRegistrationByUser(UserEntry userEntry);
 
+
+    Collection<UserEntry> getUserEntryByUsername(String username);
     /**
      * 通过用户名获取注册凭证
      * @param username
@@ -26,27 +28,21 @@ public interface RegistrationStorage extends CredentialRepository {
     Collection<CredentialRegistration> getRegistrationsByUsername(String username);
 
     /**
-     * 通过用户名和用户句柄获取注册凭证
+     * 获取用户信息
      * @param username
-     * @param userHandle
+     * @param credentialId
      * @return
      */
-    Optional<CredentialRegistration> getRegistrationByUsernameAndCredentialId(String username, ByteArray userHandle);
+    Optional<UserEntry> getUserEntryByUsernameAndCredentialId(String username, ByteArray credentialId);
 
-    /**
-     * 获取用户句柄获取注册凭证集
-     * @param userHandle
-     * @return
-     */
-    Collection<CredentialRegistration> getRegistrationsByUserHandle(ByteArray userHandle);
 
     /**
      * 根据用户名删除用户凭证
      * @param username
-     * @param credentialRegistration
+     * @param userEntry
      * @return
      */
-    boolean removeRegistrationByUsername(String username, CredentialRegistration credentialRegistration);
+    boolean removeRegistrationByUsername(String username, UserEntry userEntry);
 
     /**
      * 根据用户名删除用户凭证
@@ -57,7 +53,9 @@ public interface RegistrationStorage extends CredentialRepository {
 
     /**
      * 变更签名验证次数
-     * @param result
+     * @param username
+     * @param credentialId
+     * @param signatureCount
      */
-    void updateSignatureCount(AssertionResult result);
+    void updateSignatureCount(String username, ByteArray credentialId, long signatureCount);
 }
