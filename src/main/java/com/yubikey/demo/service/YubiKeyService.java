@@ -66,6 +66,9 @@ public class YubiKeyService {
             origins.add("http://localhost:10000");
             origins.add("https://zhouzhipeng.com");
 
+            /*
+             * 注意name是必需的, id(RelyingPartyIdentity)属性必须等于客户端看到的原始域，或者origin必须是id的子域。如果省略id，则使用originins有效域。
+             */
             rp = RelyingParty.builder()
                     .identity(relyingPartyIdentity)
                     .credentialRepository(this.userStorage)
