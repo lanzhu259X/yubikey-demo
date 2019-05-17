@@ -16,6 +16,8 @@
 
 + 分层方法：对于需要更高级别身份验证安全性的组织，FIDO2支持带有PIN，生物识别或手势的硬件身份验证设备来提供额外保护。
 
+> 测试时使用过 `U2F`, 存在一些问题，在google浏览器上有依赖并且挺强的，新版本中还存在有缺失插件的问题（[u2f-ref-code/u2f-chrome-extension](https://github.com/google/u2f-ref-code/tree/master/u2f-chrome-extension) 已经开始弃用）。并且，官方已经建议使用`WebAuthn-FIDO2`这种方式，并且现在的`WebAuthn`已经是W3C上升为身份验证的WEB标准了，在主流浏览器上都能得到支持。
+
 
 ### 遇到的问题
 
