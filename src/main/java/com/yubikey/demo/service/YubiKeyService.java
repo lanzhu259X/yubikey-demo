@@ -32,7 +32,9 @@ public class YubiKeyService {
     private static final String RELY_PART_ID = "zhouzhipeng.com";
     private static final String RELY_PART_NAME = "Yubico WebAuthn demo";
     /**
-     * 需要与请求源的域名信息一致，使用的源请求必须要使用https证书方式，如果localhost下没有用https方式，则无法进行验证
+     * 需要与请求源的域名信息一致，使用的源请求必须要使用https证书方式，
+     * 如果localhost下没有用https方式，则无法进行验证。
+     * 测试时改为自己的https证书的域名
      */
     private static final String APP_ID = "https://zhouzhipeng.com";
 
