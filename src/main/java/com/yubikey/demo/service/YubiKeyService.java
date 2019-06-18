@@ -29,15 +29,16 @@ public class YubiKeyService {
     /**
      * 发现需要与域名段保存一致
      */
-    private static final String RELY_PART_ID = "zhouzhipeng.com";
+    private static final String RELY_PART_ID = "mytest.com";
     private static final String RELY_PART_NAME = "Yubico WebAuthn demo";
     /**
      * 需要与请求源的域名信息一致，使用的源请求必须要使用https证书方式，
      * 如果localhost下没有用https方式，则无法进行验证。
      * 测试时改为自己的https证书的域名
      */
-    private static final String APP_ID = "https://zhouzhipeng.com";
+    private static final String APP_ID = "https://mytest.com";
 
+    private static final String ORIGINS = "https://mytest.com,https://jacktest.com";
     private RelyingParty rp;
 
     private RegistrationStorage userStorage;
@@ -64,9 +65,7 @@ public class YubiKeyService {
                     .name(RELY_PART_NAME)
                     .build();
             // 注意需要注入可信任来源信息
-            Set<String> origins = new HashSet<>();
-            origins.add("http://localhost:10000");
-            origins.add("https://zhouzhipeng.com");
+            Set<String> origins = new HashSet<>(Arrays.asList(ORIGINS.split(",")));
 
             /*
              * 注意name是必需的, id(RelyingPartyIdentity)属性必须等于客户端看到的原始域，或者origin必须是id的子域。如果省略id，则使用originins有效域。
