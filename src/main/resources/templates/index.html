@@ -28,6 +28,13 @@
     <div>
         <button type="button" id="deregister">Deregister</button>
     </div>
+
+    <div>
+        <button type="button" id="u2f-register">U2F register</button>
+    </div>
+    <div>
+        <button type="button" id="u2f-authenticate">U2F Authenticate</button>
+    </div>
 </form>
 
 <br/>
@@ -43,6 +50,7 @@
 <script th:src="@{js/base64js-1.3.0.min.js}" ></script>
 <script th:src="@{js/base64url.js}"></script>
 <script th:src="@{js/webauthn.js}" ></script>
+<script th:src="@{js/u2f-api.js}" ></script>
 <script type="text/javascript">
 
 
@@ -57,7 +65,16 @@
 
         $('#deregister').click(function () {
             deregister();
-        })
+        });
+
+        $('#u2f-register').click(function () {
+            u2fStartRegister();
+        });
+
+        $('#u2f-authenticate').click(function () {
+            u2fStartAuthentication();
+        });
+
     });
 
     var basePath = "https://" + window.location.host;
@@ -187,6 +204,131 @@
     function deregister() {
         authenticate(true);
     }
+
+    // begin start u2f ----------------
+
+    function u2fStartRegister() {
+        var username = document.getElementById("username").value;
+        if (!username || username == '') {
+            showMessage("u2f => username or nickname must.");
+            return;
+        }
+        var body = JSON.stringify({username: username});
+        $.ajax({
+            type: 'POST',
+            contentType: 'application/json',
+            url: basePath + '/u2f/startRegister',
+            data: body,
+            success: function (data) {
+                console.log("u2f => start register info: ", data);
+                var value = JSON.parse(data.data);
+                showMessage("u2f => Register 请按住yubukey...");
+                var appId = value.appId;
+                var registerRequests = value.registerRequests;
+                var registeredKeys = value.registeredKeys;
+                u2f.register(
+                    appId,
+                    registerRequests,
+                    registeredKeys,
+                    function (registerResponse) {
+                        console.log("u2f => start register response:{}", registerResponse);
+                        if (registerResponse.errorCode) {
+                            switch (registerResponse.errorCode) {
+                                case 4:
+                                    showMessage("u2f => 设备已经注册过，不能再注册!");
+                                    break;
+                                default:
+                                    showMessage("u2f => U2F fail with error: " + registerResponse.errorCode);
+                            }
+                        } else {
+                            var tokenResponse = JSON.stringify(registerResponse);
+                            u2fFinishRegister(username, tokenResponse);
+                        }
+                    }
+                );
+            }
+        });
+    }
+
+    function u2fFinishRegister(username, tokenResponse) {
+        var body = JSON.stringify({
+            username: username,
+            tokenResponse: tokenResponse
+        });
+        $.ajax({
+            type: 'POST',
+            contentType: 'application/json',
+            url: basePath + "/u2f/finishRegister",
+            data: body,
+            success: function (data) {
+                console.log("u2f => register result:", data);
+                showMessage("u2f => register result:" + JSON.stringify(data));
+            }
+        });
+    }
+
+    function u2fStartAuthentication() {
+        var username = document.getElementById("username").value;
+        if (!username || username == '')  {
+            showMessage("u2f => username or nickname must.");
+            return;
+        }
+        var body = JSON.stringify({username: username});
+
+        $.ajax({
+            type: 'POST',
+            contentType: 'application/json',
+            url: basePath + '/u2f/startAuthentication',
+            data: body,
+            success: function (data) {
+                console.log("u2f => start authentication info: ", data);
+                var value = JSON.parse(data.data);
+                showMessage("u2f => Authentication 请按住yubukey...");
+                var appId = value.appId;
+                var challenge = value.challenge;
+                var signRequests = value.signRequests;
+                u2f.sign(
+                    appId,
+                    challenge,
+                    signRequests,
+                    function (registerResponse) {
+                        console.log("u2f => start authentication response:{}", registerResponse);
+                        if (registerResponse.errorCode) {
+                            switch (registerResponse.errorCode) {
+                                case 4:
+                                    showMessage("u2f => 设备还未注册！");
+                                    break;
+                                default:
+                                    showMessage("u2f => U2F fail with error: " + registerResponse.errorCode + " "+ registerResponse.errorMessage);
+                            }
+                        } else {
+                            var tokenResponse = JSON.stringify(registerResponse);
+                            u2fFinishAuthentication(username, tokenResponse);
+                        }
+                    }
+                )
+            }
+        });
+    }
+
+    function u2fFinishAuthentication(username, tokenResponse) {
+        var body = JSON.stringify({
+            username: username,
+            tokenResponse: tokenResponse
+        });
+        $.ajax({
+            type: 'POST',
+            contentType: 'application/json',
+            url: basePath + "/u2f/finishAuthentication",
+            data: body,
+            success: function (data) {
+                console.log("u2f => authentication result:", data);
+                showMessage("u2f => authentication result:" + JSON.stringify(data));
+            }
+        });
+    }
+
+
 
 </script>
 </body>
